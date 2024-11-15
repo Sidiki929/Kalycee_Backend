@@ -6,10 +6,10 @@ const bcrypt = require("bcrypt");
 const mongoose = require("mongoose");
 require("dotenv").config()
 
-const accoundSid = process.env.ACCOUNT_SID
-const accountToken = process.env.ACCOUNTtOKEN
+//const accoundSid = process.env.ACCOUNT_SID
+//const accountToken = process.env.ACCOUNTtOKEN
 
-const client = require("twilio")(accoundSid,accountToken)
+//const client = require("twilio")(accoundSid,accountToken)
 
 /* const senSMS = async (body)=>{
 let msgOptions ={
