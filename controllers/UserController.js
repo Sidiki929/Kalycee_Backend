@@ -27,48 +27,64 @@ try {
 
 }
  */
-
 const createUser = asyncHandler(async (req, res) => {
   try {
-    const users = req.body;  // Le tableau d'utilisateurs envoyé dans le corps de la requête
-    const todayDate1 = new Date();
+    const users = req.body; // Le tableau d'utilisateurs envoyé dans le corps de la requête
+    const todayDate = new Date();
 
-    // Vérifier si le tableau d'utilisateurs est fourni
+    // Vérifier si le tableau d'utilisateurs est valide
     if (!users || !Array.isArray(users) || users.length === 0) {
-      return res.status(400).json({ error: "Veuillez fournir un tableau d'utilisateurs." });
+      return res.status(400).json({ error: "Veuillez fournir un tableau d'utilisateurs valide." });
     }
 
-    // Itérer sur chaque utilisateur et créer un utilisateur
+    // Valider chaque utilisateur avant traitement
     for (let user of users) {
       const { nom, prenom, telephone, password, userType } = user;
+
+      // Vérifier si les champs requis sont présents
+      if (!nom || !prenom || !telephone || !password || !userType) {
+        return res
+          .status(400)
+          .json({ error: "Champs manquants pour l'utilisateur.", details: user });
+      }
 
       // Vérifier si l'utilisateur avec le même téléphone existe déjà
       const existingUser = await User.findOne({ telephone });
       if (existingUser) {
-        return res.status(400).json({ error: `Utilisateur existant avec ce téléphone : ${telephone}` });
+        return res
+          .status(400)
+          .json({ error: `Utilisateur existant avec ce téléphone : ${telephone}` });
       }
+    }
+
+    // Traiter chaque utilisateur et créer des comptes
+    const createdUsers = [];
+    for (let user of users) {
+      const { nom, prenom, telephone, password, userType } = user;
 
       // Hasher le mot de passe
       const hashedPassword = await bcrypt.hash(password, 10);
 
       // Créer l'utilisateur
-      await User.create({
+      const newUser = await User.create({
         nom,
         prenom,
         telephone,
         password: hashedPassword,
         userType,
-        date_ajout: todayDate1,
+        date_ajout: todayDate,
       });
+
+      createdUsers.push(newUser);
     }
 
-    res.status(200).json({ message: "Utilisateurs ajoutés avec succès" });
+    // Réponse réussie
+    res.status(201).json({ message: "Utilisateurs ajoutés avec succès", users: createdUsers });
   } catch (error) {
     console.error("Erreur lors de la création des utilisateurs :", error);
-    res.status(500).json({ error: "Erreur serveur" });
+    res.status(500).json({ error: "Une erreur interne du serveur s'est produite." });
   }
 });
-
 
 
 
