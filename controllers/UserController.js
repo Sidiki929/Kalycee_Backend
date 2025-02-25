@@ -273,7 +273,7 @@ const loginUser = asyncHandler(async (req, res) => {
     _id: updatedUser._id,
     prenom: updatedUser.prenom,
     nom: updatedUser.nom,
-    telephone:updateUser.telephone,
+    telephone:telephone,
     userType: updatedUser.userType,
     date_ajout: updatedUser.date_ajout,
     token: generateToken(updatedUser._id),
