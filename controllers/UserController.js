@@ -271,7 +271,6 @@ const loginUser = asyncHandler(async (req, res) => {
   // Réponse réussie avec les données de l'utilisateur
   return res.status(200).json({
     _id: updatedUser._id,
-    username: updatedUser.username,
     prenom: updatedUser.prenom,
     nom: updatedUser.nom,
     userType: updatedUser.userType,
