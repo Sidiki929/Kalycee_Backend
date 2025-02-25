@@ -239,40 +239,45 @@ router.put('/changePassword/:id', async (req, res) => {
 
 
 
-
-
 const loginUser = asyncHandler(async (req, res) => {
-  const { username, password } = req.body;
-  
+  const { telephone, password } = req.body;
+
   // Vérification si l'utilisateur existe
-  const findUser = await User.findOne({ username });
-
-  if (findUser && (await bcrypt.compare(password.toString(), findUser.password))) {
-      const refreshToken = await generateRefreshToken(findUser._id);
-      const updatedUser = await User.findByIdAndUpdate(
-          findUser._id,
-          { refreshToken },
-          { new: true }
-      );
-
-      res.cookie("refreshToken", refreshToken, {
-          httpOnly: true,
-          maxAge: 72 * 60 * 60 * 1000 // 3 jours
-      });
-
-      // Réponse réussie avec les données de l'utilisateur
-      return res.status(200).json({
-          _id: updatedUser._id,
-          username: updatedUser.username,
-          prenom: updatedUser.prenom,
-          nom: updatedUser.nom,
-          userType: updatedUser.userType,
-          date_ajout: updatedUser.date_ajout,
-          token: generateToken(updatedUser._id)
-      });
-  } else {
-      return res.status(401).json({ message: "Identifiants invalides" });
+  const findUser = await User.findOne({ telephone });
+  if (!findUser) {
+    return res.status(404).json({ message: "Utilisateur non trouvé" });
   }
+
+  // Vérification du mot de passe
+  const isPasswordValid = await bcrypt.compare(password.toString(), findUser.password);
+  if (!isPasswordValid) {
+    return res.status(401).json({ message: "Mot de passe incorrect" });
+  }
+
+  // Génération du token de rafraîchissement
+  const refreshToken = await generateRefreshToken(findUser._id);
+  const updatedUser = await User.findByIdAndUpdate(
+    findUser._id,
+    { refreshToken },
+    { new: true }
+  );
+
+  // Envoi du cookie avec le refreshToken
+  res.cookie("refreshToken", refreshToken, {
+    httpOnly: true,
+    maxAge: 72 * 60 * 60 * 1000, // 3 jours
+  });
+
+  // Réponse réussie avec les données de l'utilisateur
+  return res.status(200).json({
+    _id: updatedUser._id,
+    username: updatedUser.username,
+    prenom: updatedUser.prenom,
+    nom: updatedUser.nom,
+    userType: updatedUser.userType,
+    date_ajout: updatedUser.date_ajout,
+    token: generateToken(updatedUser._id),
+  });
 });
 
 
